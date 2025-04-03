@@ -4,7 +4,6 @@ import br.com.marques.kontaktapi.domain.dto.user.LoginRequest;
 import br.com.marques.kontaktapi.domain.dto.user.TokenResponse;
 import br.com.marques.kontaktapi.domain.entity.Role;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.domain.repository.IUserRepository;
 import br.com.marques.kontaktapi.service.AuthService;
 import br.com.marques.kontaktapi.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
         return generateResponse(user);
     }
 
-    public boolean isPasswordCorrect(String requestPassword, String userPassword) {
+    private boolean isPasswordCorrect(String requestPassword, String userPassword) {
         return passwordEncoder.matches(requestPassword, userPassword);
     }
 
