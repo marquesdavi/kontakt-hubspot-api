@@ -6,5 +6,5 @@ import br.com.marques.kontaktapi.domain.entity.User;
 
 public interface AuthService {
     TokenResponse authenticate(LoginRequest request);
-    Object generateResponse(User user);
+    TokenResponse generateResponse(User user);
 }

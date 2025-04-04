@@ -9,4 +9,5 @@ public interface UserService {
     void create(RegisterRequest dto);
     List<User> list();
     User findByEmail(String email);
+    User getLogged();
 }

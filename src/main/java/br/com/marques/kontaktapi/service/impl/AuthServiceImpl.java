@@ -31,7 +31,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Value("${jwt.token.expires-in:3600}")
     private long expiresIn;
-
     private static final String ISSUER = "kontakt-api";
 
     @Override
@@ -39,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Tentativa de login para o email: {}", request.email());
         User user = userService.findByEmail(request.email());
 
-        if (Objects.nonNull(user) || !isPasswordCorrect(request.password(), user.getPassword())) {
+        if (Objects.isNull(user) || !isPasswordCorrect(request.password(), user.getPassword())) {
             log.warn("Falha na tentativa de login para o email: {}", request.email());
             throw new BadCredentialsException("Usuário ou senha inválidos!");
         }

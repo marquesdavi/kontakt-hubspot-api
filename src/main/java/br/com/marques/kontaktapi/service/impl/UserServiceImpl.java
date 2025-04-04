@@ -12,11 +12,14 @@ import br.com.marques.kontaktapi.service.RoleService;
 import br.com.marques.kontaktapi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -55,5 +58,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> list() {
         return userRepository.findAll();
+    }
+
+    public User findByIdOrElseThrow(Long id) {
+        return userRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("User not found")
+        );
+    }
+
+    @Override
+    public User getLogged(){
+        Authentication currentSession = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.getLong(currentSession.getName());
+        return findByIdOrElseThrow(userId);
     }
 }
