@@ -15,6 +15,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -49,7 +50,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
                         "/oauth/v1/token",
                         params,
                         OAuthTokenResponse.class)
-                .doOnNext(tr -> log.info("Token received for user {}: {}", userId, tr.access_token()))
+                .doOnNext(tr -> log.info("Token received for user {}", userId))
                 .doOnError(error -> log.error("Error exchanging code for token for user {}: {}", userId, error.getMessage()))
                 .block();
 
@@ -68,7 +69,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
                         "/oauth/v1/token",
                         params,
                         OAuthTokenResponse.class)
-                .doOnNext(tr -> log.info("New token received synchronously for user {}: {}", userId, tr.access_token()))
+                .doOnNext(tr -> log.info("New token received for user {}", userId))
                 .doOnError(error -> log.error("Error refreshing token for user {}: {}", userId, error.getMessage()))
                 .block();
 
@@ -77,9 +78,9 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
     }
 
     Long decodeUserIdFromState(String state) {
-        if (state == null || state.isEmpty()) {
+        if (Objects.isNull(state) || state.isEmpty())
             throw new IllegalArgumentException("State parameter is missing or empty");
-        }
+
         try {
             String decodedState = URLDecoder.decode(state, StandardCharsets.UTF_8);
             String[] parts = decodedState.split(":");
@@ -91,7 +92,8 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
     }
 
     void persistTokens(OAuthTokenResponse tokenResponse, Long userId) {
-        if (tokenResponse == null) return;
+        if (Objects.isNull(tokenResponse)) return;
+
         try {
             log.info("Persisting HubSpot tokens for user {}", userId);
             long accessTokenTTL = tokenResponse.expires_in();
@@ -109,18 +111,18 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
     public String getAccessTokenByUserId(Long userId) {
         String accessTokenKey = getAccessTokenKey(userId);
         String token = cacheServiceStrategy.get(accessTokenKey);
-        if (token == null || token.isEmpty()) {
+        if (Objects.isNull(token) || token.isEmpty())
             token = accessTokenFallback(userId);
-        }
+
         return token;
     }
 
     String accessTokenFallback(Long userId) {
         log.info("Access token not found for user {}. Attempting to refresh token.", userId);
         String refreshToken = getRefreshTokenByUserId(userId);
-        if (refreshToken != null && !refreshToken.isEmpty()) {
+        if (Objects.nonNull(refreshToken) && !refreshToken.isEmpty()) {
             OAuthTokenResponse refreshed = refreshTokenSync(refreshToken, userId);
-            return (refreshed != null) ? refreshed.access_token() : null;
+            return (Objects.nonNull(refreshed)) ? refreshed.access_token() : null;
         }
         log.error("No refresh token found for user {}", userId);
         return null;

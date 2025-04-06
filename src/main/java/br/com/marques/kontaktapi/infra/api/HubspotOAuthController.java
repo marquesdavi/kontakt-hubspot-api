@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.api;
+package br.com.marques.kontaktapi.infra.api;
 
 import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackRequest;
 import br.com.marques.kontaktapi.app.usecase.HubspotTokenUsecase;
@@ -33,11 +33,6 @@ public class HubspotOAuthController {
         return ResponseEntity.ok(authUrl);
     }
 
-    @Operation(summary = "Handle token exchange")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
-    })
     @GetMapping(value = "/callback", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView doTokenExchange(@RequestParam("code") String code,
                                         @RequestParam(value = "state", required = false) String state) {

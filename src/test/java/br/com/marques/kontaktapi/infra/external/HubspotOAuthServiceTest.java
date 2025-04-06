@@ -129,10 +129,12 @@ class HubspotOAuthServiceTest {
             assertNotNull(result);
             assertEquals("newAccessToken", result.access_token());
             assertEquals("newRefreshToken", result.refresh_token());
-            verify(hubspotApiHelper, times(1)).buildCallParameters("refresh_token");
+            verify(hubspotApiHelper, times(1))
+                    .buildCallParameters("refresh_token");
             verify(hubspotApiHelper, times(1))
                     .executeCall(anyString(), any(MultiValueMap.class), eq(OAuthTokenResponse.class));
-            verify(cacheServiceStrategy, times(1)).delete("hubspot:refresh_token:1");
+            verify(cacheServiceStrategy, times(1))
+                    .delete("hubspot:refresh_token:1");
             verify(cacheServiceStrategy, times(1))
                     .set(eq("hubspot:access_token:1"), eq("newAccessToken"), eq(Duration.ofSeconds(3600)));
             verify(cacheServiceStrategy, times(1))
@@ -225,6 +227,7 @@ class HubspotOAuthServiceTest {
                     3600,
                     "crm.objects.contacts.read crm.objects.contacts.write"
             );
+
             when(hubspotApiHelper.buildCallParameters(anyString())).thenReturn(new LinkedMultiValueMap<>());
             when(hubspotApiHelper.executeCall(anyString(), any(MultiValueMap.class), eq(OAuthTokenResponse.class)))
                     .thenReturn(Mono.just(tokenResponseDTO));

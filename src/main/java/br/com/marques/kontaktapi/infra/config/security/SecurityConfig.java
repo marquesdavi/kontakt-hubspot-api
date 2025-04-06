@@ -54,6 +54,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(
                         authorize -> authorize
                                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/hubspot/webhook/contact").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/hubspot/callback").permitAll()
                                 .requestMatchers(AUTH_WHITE_LIST).permitAll()
                                 .anyRequest()//.permitAll()

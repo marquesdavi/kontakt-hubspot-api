@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.api;
+package br.com.marques.kontaktapi.infra.api;
 
 import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.entity.User;
@@ -26,7 +26,7 @@ public class UserController {
             @ApiResponse(responseCode = "201", description = "User created"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Void> create(@RequestBody RegisterRequest dto) {
         service.create(dto);
         return ResponseEntity.ok().build();
@@ -38,7 +38,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid parameters supplied"),
             @ApiResponse(responseCode = "404", description = "Users not found")
     })
-    @GetMapping("/")
+    @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     public ResponseEntity<List<User>> list() {
         List<User> users = service.list();

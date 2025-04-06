@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.api;
+package br.com.marques.kontaktapi.infra.api;
 
 import br.com.marques.kontaktapi.domain.dto.user.LoginRequest;
 import br.com.marques.kontaktapi.domain.dto.user.TokenResponse;
