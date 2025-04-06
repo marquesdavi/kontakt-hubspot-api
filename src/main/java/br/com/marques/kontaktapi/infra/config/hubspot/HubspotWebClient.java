@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.config;
+package br.com.marques.kontaktapi.infra.config.hubspot;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

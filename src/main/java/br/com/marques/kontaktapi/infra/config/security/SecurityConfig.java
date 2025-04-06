@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.config;
+package br.com.marques.kontaktapi.infra.config.security;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;

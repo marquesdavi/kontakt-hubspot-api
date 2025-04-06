@@ -1,8 +1,8 @@
 package br.com.marques.kontaktapi.api;
 
-import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackDTO;
+import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackRequest;
 import br.com.marques.kontaktapi.app.usecase.HubspotTokenUsecase;
-import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthTokenResponseDTO;
+import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthTokenResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping("/api/hubspot")
 @Tag(name = "Hubspot Authentication", description = "Hubspot Authentication management")
 public class HubspotOAuthController {
-    private final HubspotTokenUsecase<OAuthCallbackDTO, OAuthTokenResponseDTO> hubspotTokenUsecase;
+    private final HubspotTokenUsecase<OAuthCallbackRequest, OAuthTokenResponse> hubspotTokenUsecase;
 
     @Operation(summary = "Returns an Authorization URL")
     @ApiResponses(value = {
@@ -42,7 +42,7 @@ public class HubspotOAuthController {
     public ModelAndView doTokenExchange(@RequestParam("code") String code,
                                         @RequestParam(value = "state", required = false) String state) {
         try {
-            hubspotTokenUsecase.processTokenExchange(new OAuthCallbackDTO(code, state));
+            hubspotTokenUsecase.processTokenExchange(new OAuthCallbackRequest(code, state));
             return createView("success", "Authentication successful. You can close this window.");
         } catch (Exception ex) {
             log.error("Error in token exchange: {}", ex.getMessage());

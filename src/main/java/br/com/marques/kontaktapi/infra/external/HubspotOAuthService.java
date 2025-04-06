@@ -1,9 +1,8 @@
 package br.com.marques.kontaktapi.infra.external;
 
 import br.com.marques.kontaktapi.app.usecase.HubspotTokenUsecase;
-import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackDTO;
-import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthTokenResponseDTO;
-import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
+import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackRequest;
+import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthTokenResponse;
 import br.com.marques.kontaktapi.domain.entity.User;
 import br.com.marques.kontaktapi.app.strategy.CacheServiceStrategy;
 import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
@@ -21,7 +20,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO, OAuthTokenResponseDTO> {
+public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackRequest, OAuthTokenResponse> {
 
     private final HubspotApiHelper hubspotApiHelper;
     private final CacheServiceStrategy cacheServiceStrategy;
@@ -30,25 +29,27 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO
     @Override
     public String generateAuthorizationUrl() {
         String scopes = "crm.objects.contacts.read crm.objects.contacts.write";
+
         Long loggedUserId = userCrudUsecase.getLogged().getId();
         String state = loggedUserId + ":" + UUID.randomUUID();
         String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+
         return hubspotApiHelper.generateAuthorizationUrl(scopes, encodedState);
     }
 
     @Override
-    public void processTokenExchange(OAuthCallbackDTO callbackDto) {
+    public void processTokenExchange(OAuthCallbackRequest callbackDto) {
         Long userId = decodeUserIdFromState(callbackDto.state());
 
         String code = callbackDto.code();
         MultiValueMap<String, String> params = hubspotApiHelper.buildCallParameters("authorization_code");
         params.add("code", code);
 
-        OAuthTokenResponseDTO tokenResponse = hubspotApiHelper.executeCall(
+        OAuthTokenResponse tokenResponse = hubspotApiHelper.executeCall(
                         "/oauth/v1/token",
                         params,
-                        OAuthTokenResponseDTO.class)
-                .doOnNext(tr -> log.info("Token received for user {}", userId))
+                        OAuthTokenResponse.class)
+                .doOnNext(tr -> log.info("Token received for user {}: {}", userId, tr.access_token()))
                 .doOnError(error -> log.error("Error exchanging code for token for user {}: {}", userId, error.getMessage()))
                 .block();
 
@@ -56,18 +57,18 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO
     }
 
     @Override
-    public OAuthTokenResponseDTO refreshTokenSync(String refreshToken, Long userId) {
+    public OAuthTokenResponse refreshTokenSync(String refreshToken, Long userId) {
         MultiValueMap<String, String> params = hubspotApiHelper.buildCallParameters("refresh_token");
         params.add("refresh_token", refreshToken);
 
         String refreshTokenKey = getRefreshTokenKey(userId);
         cacheServiceStrategy.delete(refreshTokenKey);
 
-        OAuthTokenResponseDTO tokenResponse = hubspotApiHelper.executeCall(
+        OAuthTokenResponse tokenResponse = hubspotApiHelper.executeCall(
                         "/oauth/v1/token",
                         params,
-                        OAuthTokenResponseDTO.class)
-                .doOnNext(tr -> log.info("New token received for user {}", userId))
+                        OAuthTokenResponse.class)
+                .doOnNext(tr -> log.info("New token received synchronously for user {}: {}", userId, tr.access_token()))
                 .doOnError(error -> log.error("Error refreshing token for user {}: {}", userId, error.getMessage()))
                 .block();
 
@@ -75,7 +76,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO
         return tokenResponse;
     }
 
-    private Long decodeUserIdFromState(String state) {
+    Long decodeUserIdFromState(String state) {
         if (state == null || state.isEmpty()) {
             throw new IllegalArgumentException("State parameter is missing or empty");
         }
@@ -89,7 +90,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO
         }
     }
 
-    public void persistTokens(OAuthTokenResponseDTO tokenResponse, Long userId) {
+    void persistTokens(OAuthTokenResponse tokenResponse, Long userId) {
         if (tokenResponse == null) return;
         try {
             log.info("Persisting HubSpot tokens for user {}", userId);
@@ -104,6 +105,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO
         }
     }
 
+    @Override
     public String getAccessTokenByUserId(Long userId) {
         String accessTokenKey = getAccessTokenKey(userId);
         String token = cacheServiceStrategy.get(accessTokenKey);
@@ -113,11 +115,11 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO
         return token;
     }
 
-    private String accessTokenFallback(Long userId) {
+    String accessTokenFallback(Long userId) {
         log.info("Access token not found for user {}. Attempting to refresh token.", userId);
         String refreshToken = getRefreshTokenByUserId(userId);
         if (refreshToken != null && !refreshToken.isEmpty()) {
-            OAuthTokenResponseDTO refreshed = refreshTokenSync(refreshToken, userId);
+            OAuthTokenResponse refreshed = refreshTokenSync(refreshToken, userId);
             return (refreshed != null) ? refreshed.access_token() : null;
         }
         log.error("No refresh token found for user {}", userId);
@@ -129,14 +131,15 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackDTO
         return cacheServiceStrategy.get(refreshTokenKey);
     }
 
-    private String getAccessTokenKey(Long userId) {
+    String getAccessTokenKey(Long userId) {
         return "hubspot:access_token:" + userId;
     }
 
-    private String getRefreshTokenKey(Long userId) {
+    String getRefreshTokenKey(Long userId) {
         return "hubspot:refresh_token:" + userId;
     }
 }
+
 
 
 

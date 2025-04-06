@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.config;
+package br.com.marques.kontaktapi.infra.config.swagger;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
