@@ -160,6 +160,6 @@ buildNumber.properties
 *.key
 
 ### Profile properties ###
-application-prod.properties
+.env
 
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,intellij+all,redis,git

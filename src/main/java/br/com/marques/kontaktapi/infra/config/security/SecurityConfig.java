@@ -34,6 +34,7 @@ import java.security.interfaces.RSAPublicKey;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final CorsConfig corsConfig;
 
     @Value("${jwt.public.key}")
     private RSAPublicKey publicKey;
@@ -51,7 +52,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(
+        http.cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
+                .authorizeHttpRequests(
                         authorize -> authorize
                                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/hubspot/webhook/contact").permitAll()
