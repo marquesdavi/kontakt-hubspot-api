@@ -1,20 +1,31 @@
-# Kontakt API - Technical Documentation
+# 🚀 Kontakt API - Technical Documentation
+
+---
 
 ## 1. Project Overview
 
-This project is a robust CRM API developed using Spring Boot. Although the original requirements requested only integration with HubSpot, the project has been extended to provide a truly corporate-grade API. It features its own JWT-based authentication (using Spring Security 6) before accessing the HubSpot API, and it is built on a scalable architecture inspired by a simplified version of Clean Architecture. The design emphasizes the Dependency Inversion Principle—ensuring layers depend only on abstractions—and the Single Responsibility Principle.
+**Kontakt API** is a robust CRM API built using **Spring Boot**. Although the original requirements focused solely on integrating with HubSpot, this project was extended to serve as a corporate-grade solution. It features its own JWT-based authentication (with **Spring Security 6**) before interacting with the HubSpot API. The architecture follows a simplified version of Clean Architecture, emphasizing the **Dependency Inversion Principle** and the **Single Responsibility Principle**.
 
-Key features include:
-
-- **Robust Architecture:** Designed for scalability, allowing the project to grow as business needs evolve.
-- **JWT Authentication:** Uses Spring Security 6 for secure JWT authentication, ensuring that only authorized users can access protected resources.
-- **Resilience:** Fault tolerance is implemented using Resilience4j with patterns such as Rate Limiter and Circuit Breaker. A custom annotation (@Resilient) centralizes this logic across multiple service methods.
-- **Caching:** Redis is used to cache HubSpot tokens with a configurable TTL (Time To Live), thereby facilitating token retrieval and reducing redundant calls.
-- **Reusable Webhook Validation:** A custom annotation for HMAC validation ensures that requests coming from HubSpot (and potentially other sources) are validated in a reusable manner.
-- **API Documentation:** Swagger (OpenAPI 3.1) is used for documenting the API, enabling interactive testing via Swagger UI.
-- **Testing:** JUnit 5 and Mockito are used for unit testing to guarantee reliable logic and behavior.
-- **Deployment:** The project is deployed on Google Cloud, with the API on Compute Engine, Redis on Memorystore, and PostgreSQL on NeonDB.
-- **Development Tools:** A shell script (`generate_keys.sh`) is provided to generate RSA keys used for JWT authentication. A Docker Compose file is also available for local development with PostgreSQL and Redis.
+### Key Features:
+- **Robust Architecture:**  
+  Scalable design that supports future growth.
+- **JWT Authentication:**  
+  Secure authentication using Spring Security 6 to protect API access.
+- **Resilience:**  
+  Fault tolerance implemented using **Resilience4j** (Rate Limiter and Circuit Breaker). A custom annotation `@Resilient` is used to centralize this logic.
+- **Caching:**  
+  **Redis** is employed to cache HubSpot tokens with a configurable TTL, improving performance and reducing redundant calls.
+- **Reusable Webhook Validation:**  
+  A custom annotation for HMAC validation ensures uniform validation for all incoming HubSpot (or other) webhooks.
+- **API Documentation:**  
+  Documented using **Swagger (OpenAPI 3.1)**, which enables interactive testing via Swagger UI.
+- **Testing:**  
+  Unit tests are written with **JUnit 5** and **Mockito** to guarantee reliable functionality.
+- **Deployment:**  
+  Deployed on **Google Cloud**, with the API on Compute Engine, Redis on Memorystore, and PostgreSQL on NeonDB.
+- **Development Tools:**
+    - A shell script (`generate_keys.sh`) is provided to generate RSA keys for JWT.
+    - A Docker Compose file is included for local testing with PostgreSQL and Redis.
 
 ---
 
@@ -22,36 +33,40 @@ Key features include:
 
 ### Prerequisites
 - **Java 21+**
-- **Maven**: For building the project.
-- **Docker** Used to run PostgreSQL and Redis instances to local tests.
-- **Environment Variables/Profiles**:
+- **Maven** for building the project.
+- **Docker** for local testing (to run PostgreSQL and Redis).
+- **Environment Variables/Profiles:**
     - For local development, configure your `application-local.properties` with your HubSpot Client ID, Client Secret, and Redirect URI.
     - For production, adjust the properties accordingly.
-- **SSL Setup (Production)**:  
-  In production, the API is served over HTTPS. Ensure that all properties (e.g. `default.access.origin`) and URLs use HTTPS.
+- **SSL Setup (Production):**  
+  Ensure that in production all URLs (e.g. `default.access.origin`) use HTTPS.
 
 ### Steps for Running the Project
 
 1. **Set Environment Variables**  
-   For example, if you use a `.env` file, load them using:
+   For example, if using a `.env` file:
    ```bash
    export $(grep -v '^#' .env | xargs)
    ```
 
 2. **Build the Project**  
-   For Maven:
+   With Maven:
    ```bash
    mvn clean install
    ```
 
 3. **Run the Application**  
-   For local development, run the JAR with the local profile:
-   ```
+   For local development (with tests skipped):
+   ```bash
    mvn spring-boot:run -Dspring-boot.run.profiles=local -DskipTests
+   ```
+   For production:
+   ```bash
+   mvn spring-boot:run -Dspring-boot.run.profiles=prod -DskipTests
    ```
 
 4. **Docker Compose (Local Testing)**  
-   Use the provided Docker Compose file for PostgreSQL and Redis:
+   Use the provided Docker Compose file:
    ```yaml
    services:
      postgres:
@@ -67,12 +82,12 @@ Key features include:
        ports:
          - "6379:6379"
    ```
-   Start the services with:
+   Then run:
    ```bash
    docker-compose up
    ```
 
-5. **Accessing the API and Documentation**
+5. **Access the API and Documentation**
     - **API Endpoints:**  
       Local: `http://localhost:8080/api/...`  
       Production: `https://kontaktapplication.ddns.net/api/...`
@@ -80,54 +95,57 @@ Key features include:
       Local: `http://localhost:8080/swagger-ui/index.html`  
       Production: `https://kontaktapplication.ddns.net/swagger-ui/index.html`
     - **Actuator Endpoints:**  
-      e.g., `http://localhost:8080/actuator/` for health, metrics, and resilience events.
+      Available at: `http://localhost:8080/actuator/`
 
 6. **Generate RSA Keys**  
-   Run the script `generate_keys.sh` located at the project root to generate the necessary RSA keys for JWT authentication.
+   Run the script:
+   ```bash
+   ./generate_keys.sh
+   ```
+   This script (found at the project root) generates the RSA keys required for JWT.
 
 ---
 
 ## 3. Architectural and Library Decisions
 
-### Spring Boot and Spring Security 6
+### Spring Boot & Spring Security 6 🔐
 - **Motivation:**  
-  Leverages auto-configuration and rapid development. Spring Security 6 is used for secure JWT authentication and authorization, ensuring only valid users can access the API.
+  Rapid setup with auto-configuration and production readiness. Spring Security 6 secures API endpoints with JWT authentication.
 
-### Resilience4j
+### Resilience4j ⚙️
 - **Motivation:**  
-  Resilience4j is lightweight and modular, offering fault-tolerance patterns such as Rate Limiter and Circuit Breaker.
+  A lightweight and modular library for implementing fault tolerance.
 - **Usage:**
     - **Rate Limiter:**  
-      Protects API endpoints from overload by limiting the number of calls per time window.
+      Protects API endpoints by limiting calls per time window to prevent overload.
     - **Circuit Breaker:**  
-      Prevents cascading failures by breaking the circuit if too many calls to an external service (or critical operation) fail.
+      Protects the system from repeated failures by breaking the circuit when too many errors occur.
 
-### Custom Resilience Annotation (@Resilient)
+### Custom Resilience Annotation (@Resilient) 🔄
 - **Motivation:**  
-  To avoid repetitive code, a custom annotation is created that, in conjunction with an aspect, applies the Resilience4j features across methods. This ensures code reuse and simplifies maintenance.
+  To encapsulate and centralize the resilience logic, reducing code duplication.
 - **Default Fallback:**  
-  The aspect provides a default fallback message if no specific fallback method is specified. This default behavior throws an exception that is then handled by the global exception handler.
+  A default fallback message is built into the aspect. If no fallback method is provided, a default exception is thrown for global handling.
 
-### Persistence and Caching
+### Persistence and Caching 💾🚀
 - **Spring Data JPA with PostgreSQL:**  
-  Provides a robust ORM solution for managing data persistence.
+  Provides ORM for robust data management.
 - **Spring Data Redis:**  
-  Caches tokens (e.g., HubSpot tokens) with TTL, reducing redundant calls and improving overall performance.
+  Caches critical data (e.g., HubSpot tokens) using TTL to improve performance and reduce unnecessary external calls.
 
-### API Documentation
-- **Swagger (OpenAPI 3.1):**  
-  Swagger is used to document the API endpoints. The configuration explicitly defines server URLs (both local and production) to ensure API calls are made with the correct protocol (HTTPS in production).
+### API Documentation with Swagger (OpenAPI 3.1) 📚
+- **Motivation:**  
+  Enables interactive API documentation and testing. The configuration specifies servers for both local (HTTP) and production (HTTPS) environments.
 
-### Testing
+### Testing 🧪
 - **JUnit 5 and Mockito:**  
-  Comprehensive unit tests ensure business logic and resilience functionalities work as expected, minimizing the risk of issues in production.
+  Ensure thorough unit testing of business logic and fault-tolerance implementations, reducing production surprises.
 
-### Deployment Strategy
-- **Google Cloud Deployment:**
-    - **Compute Engine** runs the API.
-    - **Memorystore** is used for Redis.
-    - **NeonDB** is used for PostgreSQL.  
-      Additionally, a Docker Compose file is provided for local testing.
+### Deployment Strategy ☁️
+- **Google Cloud:**  
+  The API is deployed on Compute Engine, Redis on Memorystore, and PostgreSQL on NeonDB.
+- **Docker Compose:**  
+  A Docker Compose file is provided for local development, simplifying the setup of PostgreSQL and Redis.
 
 ---
 
@@ -160,7 +178,7 @@ spring.data.redis.port=6379
 
 ### Resilience4j Configuration
 ```properties
-# Rate Limiter for API endpoints
+# Rate Limiter Configuration
 resilience4j.ratelimiter.instances.RateLimiter.limit-for-period=5
 resilience4j.ratelimiter.instances.RateLimiter.limit-refresh-period=10s
 resilience4j.ratelimiter.instances.RateLimiter.timeout-duration=0s
@@ -169,7 +187,7 @@ resilience4j.ratelimiter.instances.hubspotRateLimiter.limit-for-period=5
 resilience4j.ratelimiter.instances.hubspotRateLimiter.limit-refresh-period=10s
 resilience4j.ratelimiter.instances.hubspotRateLimiter.timeout-duration=0s
 
-# Circuit Breaker configuration
+# Circuit Breaker Configuration
 resilience4j.circuitbreaker.instances.CircuitBreaker.register-health-indicator=true
 resilience4j.circuitbreaker.instances.CircuitBreaker.sliding-window-type=COUNT_BASED
 resilience4j.circuitbreaker.instances.CircuitBreaker.sliding-window-size=10
@@ -206,113 +224,114 @@ springdoc.swagger-ui.server-url=https://kontaktapplication.ddns.net
 - **POST /api/contact**  
   **Description:** Creates a new contact in HubSpot.  
   **Behavior:**
-    - The endpoint receives a JSON payload (ContactRequest) and invokes the `createContact` use case.
-    - Validates input and, if successful, creates the contact.
-    - Protected by a rate limiter using Resilience4j.
+    - Receives a JSON payload (`ContactRequest`) and calls the `createContact` use case.
+    - Validates input and creates the contact.
+    - Protected by Resilience4j’s Rate Limiter & Circuit Breaker.
     - **Responses:**
-        - **201 CREATED** on success (contact created).
-        - **400 Bad Request** if the input is invalid.
+        - **201 CREATED** on success.
+        - **400 BAD REQUEST** on invalid input.
 
 - **GET /api/contact**  
   **Description:** Lists contacts from HubSpot.  
   **Behavior:**
-    - The endpoint returns a reactive response (Mono of Map) with the list of contacts.
-    - Calls the `listContacts` use case, which retrieves contacts from HubSpot.
-    - Handles errors by returning a 400 status.
+    - Returns a reactive response with a map of contacts.
+    - Calls the `listContacts` use case.
     - **Responses:**
         - **200 OK** when contacts are successfully retrieved.
-        - **400 Bad Request** on error.
+        - **400 BAD REQUEST** on errors.
 
 ### 5.2 HubspotOAuthController
 - **GET /api/hubspot/url**  
-  **Description:** Returns the HubSpot authorization URL to initiate the OAuth flow.  
+  **Description:** Retrieves the HubSpot authorization URL to start the OAuth flow.  
   **Behavior:**
-    - Calls `generateAuthorizationUrl()` on the token service.
-    - **Responses:**
-        - **200 OK** with the URL string.
+    - Calls the token service to generate the URL.
+    - **Response:**
+        - **200 OK** with the authorization URL.
 
 - **GET /api/hubspot/callback**  
   **Description:** Processes the OAuth callback from HubSpot.  
   **Behavior:**
-    - Receives the authorization code and state as query parameters.
-    - Performs the token exchange.
-    - Returns a simple HTML view indicating success or error.
-    - **Responses:**
-        - **HTML response** indicating whether authentication was successful or failed.
+    - Accepts the authorization code and optional state as query parameters.
+    - Executes a token exchange and returns an HTML view indicating the result.
+    - **Response:**
+        - A simple HTML page showing success or error.
 
 ### 5.3 UserAuthController
 - **POST /api/auth/login**  
   **Description:** Authenticates a user and returns a JWT token.  
   **Behavior:**
-    - Receives a LoginRequest payload.
-    - Invokes the authentication service to validate credentials.
+    - Accepts a `LoginRequest` JSON payload.
+    - Uses the authentication service to verify credentials.
     - **Responses:**
-        - **200 OK** with a TokenResponse (JWT token).
-        - **400 Bad Request** on invalid input.
+        - **200 OK** with a JWT token.
+        - **400 BAD REQUEST** if input is invalid.
 
 ### 5.4 UserController
 - **POST /api/user**  
   **Description:** Creates a new user in the system.  
   **Behavior:**
-    - Receives a RegisterRequest payload.
+    - Receives a `RegisterRequest` payload.
     - Invokes the user creation use case.
-    - Protected (if desired) by resilience patterns.
+    - Protected by resilience patterns.
     - **Responses:**
-        - **201 CREATED** on successful creation.
-        - **400 Bad Request** on validation errors.
+        - **201 CREATED** if successful.
+        - **400 BAD REQUEST** on validation errors.
 
 - **GET /api/user**  
-  **Description:** Lists all users (staff only).  
+  **Description:** Retrieves a list of all users (administrative access only).  
   **Behavior:**
-    - Invokes the list use case.
-    - Protected by Spring Security (restricted to Admin).
+    - Retrieves the list of users.
+    - Protected by Spring Security (restricted to Admin role).
     - **Responses:**
         - **200 OK** with a list of users.
-        - **400 Bad Request** if the input is invalid.
-        - **404 Not Found** if no users are found.
+        - **400 BAD REQUEST** or **404 NOT FOUND** in case of errors.
 
 ### 5.5 WebhookController
 - **POST /api/hubspot/webhook/contact**  
-  **Description:** Processes incoming webhook events from HubSpot for contact creations.  
+  **Description:** Processes incoming webhook events from HubSpot regarding contact creations.  
   **Behavior:**
-    - Protected with HMAC validation via a custom annotation.
-    - Receives a list of ContactCreationEventRequest objects.
-    - Invokes the process use case to persist the events.
-    - **Responses:**
+    - Secured by HMAC validation via a custom annotation.
+    - Accepts a list of `ContactCreationEventRequest` objects.
+    - Persists events using the process use case.
+    - **Response:**
         - **200 OK** upon successful processing.
 
 - **GET /api/hubspot/webhook/contact**  
-  **Description:** Retrieves a paginated list of contact creation events received via webhooks.  
+  **Description:** Retrieves a paginated list of contact creation events received through webhooks.  
   **Behavior:**
-    - Accepts pagination parameters (pageNumber and size as query parameters).
-    - Returns a Page of ContactCreationEventEntity objects.
+    - Accepts query parameters for pagination (e.g., pageNumber and size).
+    - Returns a Page of `ContactCreationEventEntity` objects.
     - **Responses:**
         - **200 OK** with paginated results.
-        - **Appropriate error responses** if invalid parameters are supplied.
+        - **Appropriate error responses** if invalid parameters are provided.
 
 ---
 
 ## 6. Future Improvements
 
 - **Enhanced Monitoring:**  
-  Integrate with Micrometer (e.g., via the resilience4j-micrometer module) to push detailed metrics to Prometheus/Grafana dashboards for real-time insights into application performance and resilience events.
+  Integrate Micrometer (using the resilience4j-micrometer module) to push detailed metrics to Prometheus/Grafana dashboards for real-time insights.
 
 - **Expanded Resilience Patterns:**  
-  Extend the custom resilience annotation (@Resilient) to support additional patterns such as Retry, Time Limiter, and Bulkhead, enabling even finer-grained control of failure scenarios.
+  Extend the custom resilience annotation (`@Resilient`) to support additional fault-tolerance patterns such as Retry, Time Limiter, and Bulkhead for finer control.
 
 - **Global Fallback Customization:**  
-  Investigate strategies to define a global fallback behavior (through a dedicated error handler or an advanced aspect) for consistent error responses across all endpoints, reducing code duplication.
+  Investigate strategies to define a global fallback behavior—using a dedicated error handler or advanced aspect—for consistent error responses across endpoints and reduced code duplication.
 
 - **Advanced Reporting:**  
-  Integrate Jasper Reports to generate comprehensive reports (e.g., for audit trails, performance metrics, or sales pipelines). This will enhance business intelligence and help stakeholders obtain critical insights from CRM data.
+  Integrate Jasper Reports to generate comprehensive reports (e.g., audit trails, performance metrics, sales pipelines), enhancing business intelligence.
 
 - **New Business Rules:**  
-  Further evolve the CRM domain by implementing new business rules and workflows pertinent to corporate environments. For example, automate lead scoring, customer segmentation, or cross-selling opportunities to improve overall business processes.
+  Implement new business rules and workflows (such as lead scoring, customer segmentation, or cross-selling opportunities) to further evolve the CRM domain in a corporate setting.
+
+- **Improved Webhook Processing with Messaging:**  
+  **⚡ Consider leveraging a messaging service (e.g., GCP Pub/Sub) for webhook event processing.**  
+  This approach decouples the ingestion of webhook events from their processing, allowing for asynchronous handling of spikes in traffic. By pushing events to a message queue, the API can quickly acknowledge receipt of the webhook, while dedicated worker processes consume, process, and persist the events. This not only improves scalability and resilience but also enables buffering during high-load periods.
 
 - **Increased Test Coverage:**  
-  Improve integration and stress tests using tools like WireMock and JMeter to validate system behavior under high load and fault conditions, ensuring robustness in production.
+  Expand integration and stress tests using tools like WireMock and JMeter to validate system behavior under high load and fault conditions, ensuring robustness in production.
 
 - **Container Orchestration:**  
-  Consider adopting Kubernetes for container orchestration to further enhance scalability and reliability in production deployments, along with continuous delivery pipelines for automated updates.
+  Consider adopting Kubernetes for container orchestration to improve scalability and reliability in production, accompanied by CI/CD pipelines for automated deployments.
 
 ---
