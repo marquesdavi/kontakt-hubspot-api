@@ -1,13 +1,13 @@
-package br.com.marques.kontaktapi.infrastructure.api;
+package br.com.marques.kontaktapi.infrastructure.api.controller;
 
 import br.com.marques.kontaktapi.application.usecase.CreateContactUseCase;
 import br.com.marques.kontaktapi.domain.dto.contact.ContactRequest;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -18,7 +18,6 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/contact")
-@RateLimiter(name = "RateLimiter", fallbackMethod = "rateLimiterFallback")
 public class ContactController {
 
     private final CreateContactUseCase createContactUseCase;
@@ -31,7 +30,7 @@ public class ContactController {
     @PostMapping
     public ResponseEntity<Void> createContact(@RequestBody ContactRequest contactRequest) {
         createContactUseCase.createContact(contactRequest);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @Operation(summary = "Lists contacts from HubSpot")
@@ -44,9 +43,5 @@ public class ContactController {
         return createContactUseCase.listContacts()
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().build()));
-    }
-
-    public String rateLimiterFallback(Throwable t) {
-        return "Too many requests - please try again later.";
     }
 }

@@ -1,6 +1,6 @@
 package br.com.marques.kontaktapi.application.vo;
 
-import br.com.marques.kontaktapi.infrastructure.exception.ValidationError;
+import br.com.marques.kontaktapi.infrastructure.api.exception.ValidationError;
 import org.springframework.http.HttpStatusCode;
 
 import java.util.List;

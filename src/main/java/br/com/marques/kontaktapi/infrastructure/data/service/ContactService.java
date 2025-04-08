@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infrastructure.service;
+package br.com.marques.kontaktapi.infrastructure.data.service;
 
 import br.com.marques.kontaktapi.application.usecase.CreateContactUseCase;
 import br.com.marques.kontaktapi.application.usecase.HubspotTokenUsecase;
@@ -27,7 +27,7 @@ public class ContactService implements CreateContactUseCase {
     private final HubspotApiHelper hubspotApiHelper;
 
     @Override
-    @Resilient(rateLimiter = "hubspotRateLimiter", circuitBreaker = "CircuitBreaker", fallbackMethod = "fallback")
+    @Resilient(rateLimiter = "hubspotRateLimiter", circuitBreaker = "CircuitBreaker")
     public void createContact(ContactRequest contactRequest) {
         User loggedUser = userCrudUsecase.getLogged();
         Long userId = loggedUser.getId();
@@ -49,10 +49,8 @@ public class ContactService implements CreateContactUseCase {
         log.info("Contact created successfully for user {}", userId);
     }
 
-
-
     @Override
-    @Resilient(rateLimiter = "hubspotRateLimiter", circuitBreaker = "CircuitBreaker", fallbackMethod = "fallback")
+    @Resilient(rateLimiter = "hubspotRateLimiter", circuitBreaker = "CircuitBreaker")
     public Mono<Map<String, Object>> listContacts() {
         User loggedUser = userCrudUsecase.getLogged();
         Long userId = loggedUser.getId();
@@ -70,12 +68,7 @@ public class ContactService implements CreateContactUseCase {
                 .doOnError(e -> log.error("Error listing contacts for user {}: {}", userId, e.toString()));
     }
 
-    public void fallback(Throwable t) {
-        log.warn("Hubspot API rate limit exceeded. Please try again later.");
-        throw new RuntimeException("Hubspot API rate limit exceeded. Please try again later.", t);
-    }
-
-    Map<String, Object> buildRequestBody(ContactRequest contactRequest) {
+    public Map<String, Object> buildRequestBody(ContactRequest contactRequest) {
         Map<String, Object> requestBody = new HashMap<>();
         Map<String, String> properties = new HashMap<>();
         properties.put("email", contactRequest.email());

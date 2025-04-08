@@ -1,10 +1,10 @@
-package br.com.marques.kontaktapi.infrastructure.exception.handler;
+package br.com.marques.kontaktapi.infrastructure.api.exception.handler;
 
 import br.com.marques.kontaktapi.application.vo.ErrorResponse;
-import br.com.marques.kontaktapi.infrastructure.exception.AlreadyExistsException;
-import br.com.marques.kontaktapi.infrastructure.exception.GenericException;
-import br.com.marques.kontaktapi.infrastructure.exception.NotFoundException;
-import br.com.marques.kontaktapi.infrastructure.exception.ValidationError;
+import br.com.marques.kontaktapi.infrastructure.api.exception.AlreadyExistsException;
+import br.com.marques.kontaktapi.infrastructure.api.exception.GenericException;
+import br.com.marques.kontaktapi.infrastructure.api.exception.NotFoundException;
+import br.com.marques.kontaktapi.infrastructure.api.exception.ValidationError;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;

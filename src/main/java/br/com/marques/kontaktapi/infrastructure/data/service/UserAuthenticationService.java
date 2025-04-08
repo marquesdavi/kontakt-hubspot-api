@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infrastructure.service;
+package br.com.marques.kontaktapi.infrastructure.data.service;
 
 import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
 import br.com.marques.kontaktapi.domain.dto.user.LoginRequest;
@@ -6,6 +6,7 @@ import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.dto.user.TokenResponse;
 import br.com.marques.kontaktapi.domain.entity.User;
 import br.com.marques.kontaktapi.application.usecase.UserAuthenticationUsecase;
+import br.com.marques.kontaktapi.infrastructure.config.resilience.Resilient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ public class UserAuthenticationService
     private static final String ISSUER = "kontakt-api";
 
     @Override
+    @Resilient(rateLimiter = "RateLimiter", circuitBreaker = "CircuitBreaker")
     public TokenResponse authenticate(LoginRequest request) {
         log.info("Tentativa de login para o email: {}", request.email());
         User user = userCrudUsecase.findByEmail(request.email());

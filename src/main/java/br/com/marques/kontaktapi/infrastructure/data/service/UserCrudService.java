@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infrastructure.service;
+package br.com.marques.kontaktapi.infrastructure.data.service;
 
 import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
 import br.com.marques.kontaktapi.domain.entity.RoleEnum;
@@ -6,10 +6,10 @@ import br.com.marques.kontaktapi.infrastructure.config.resilience.Resilient;
 import br.com.marques.kontaktapi.infrastructure.config.security.IAuthenticationFacade;
 import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.infrastructure.mapper.UserMapper;
-import br.com.marques.kontaktapi.infrastructure.persistence.UserRepository;
-import br.com.marques.kontaktapi.infrastructure.exception.AlreadyExistsException;
-import br.com.marques.kontaktapi.infrastructure.exception.NotFoundException;
+import br.com.marques.kontaktapi.infrastructure.data.mapper.UserMapper;
+import br.com.marques.kontaktapi.infrastructure.data.persistence.UserRepository;
+import br.com.marques.kontaktapi.infrastructure.api.exception.AlreadyExistsException;
+import br.com.marques.kontaktapi.infrastructure.api.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -28,7 +28,7 @@ public class UserCrudService implements UserCrudUsecase<User, RegisterRequest> {
 
     @Override
     @Transactional
-    @Resilient(rateLimiter = "RateLimiter", circuitBreaker = "CircuitBreaker", fallbackMethod = "fallback")
+    @Resilient(rateLimiter = "RateLimiter", circuitBreaker = "CircuitBreaker")
     public void create(RegisterRequest dto) {
         log.info("Creating new user with email: {}", dto.email());
         existsByEmail(dto.email());
@@ -53,14 +53,9 @@ public class UserCrudService implements UserCrudUsecase<User, RegisterRequest> {
     }
 
     @Override
-    @Resilient(rateLimiter = "RateLimiter", circuitBreaker = "CircuitBreaker", fallbackMethod = "fallback")
+    @Resilient(rateLimiter = "RateLimiter", circuitBreaker = "CircuitBreaker")
     public List<User> list() {
         return userRepository.findAll();
-    }
-
-    public void fallback(Throwable t) {
-        log.warn("API call limit exceeded");
-        throw new RuntimeException("User creation temporarily unavailable. Please try again later.", t);
     }
 
     public User findByIdOrElseThrow(Long id) {

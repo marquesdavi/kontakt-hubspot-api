@@ -40,15 +40,15 @@ public class ResilientAspect {
             }
             log.error("Resilience error in method {}: {}", joinPoint.getSignature().getName(), e.getMessage());
             if (!resilient.fallbackMethod().isEmpty()) {
-                invokeFallbackAndThrow(joinPoint, resilient.fallbackMethod(), e);
+                Object fallbackResult = invokeFallback(joinPoint, resilient.fallbackMethod(), e);
+                if (fallbackResult != null) {
+                    return fallbackResult;
+                } else {
+                    throw new RuntimeException("Fallback method returned null.", e);
+                }
             }
-            throw e;
+            throw new RuntimeException("Default fallback: Operation temporarily unavailable.", e);
         }
-    }
-
-    private void invokeFallbackAndThrow(ProceedingJoinPoint joinPoint, String fallbackMethodName, Exception exception) throws Throwable {
-        Object fallbackResult = invokeFallback(joinPoint, fallbackMethodName, exception);
-        throw new RuntimeException("Fallback did not throw an exception as expected.", exception);
     }
 
     private boolean containsRequestNotPermitted(Throwable t) {
@@ -97,6 +97,7 @@ public class ResilientAspect {
         Object target = joinPoint.getTarget();
         Object[] originalArgs = joinPoint.getArgs();
         Object[] fallbackArgs = buildFallbackArguments(originalArgs, exception);
+
         Method fallbackMethod = findFallbackMethod(target, fallbackMethodName, fallbackArgs.length);
         if (fallbackMethod != null) {
             return fallbackMethod.invoke(target, fallbackArgs);
