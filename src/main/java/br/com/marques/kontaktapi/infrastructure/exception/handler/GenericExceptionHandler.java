@@ -1,10 +1,11 @@
-package br.com.marques.kontaktapi.infra.exception.handler;
+package br.com.marques.kontaktapi.infrastructure.exception.handler;
 
-import br.com.marques.kontaktapi.app.vo.ErrorResponse;
-import br.com.marques.kontaktapi.infra.exception.AlreadyExistsException;
-import br.com.marques.kontaktapi.infra.exception.GenericException;
-import br.com.marques.kontaktapi.infra.exception.NotFoundException;
-import br.com.marques.kontaktapi.infra.exception.ValidationError;
+import br.com.marques.kontaktapi.application.vo.ErrorResponse;
+import br.com.marques.kontaktapi.infrastructure.exception.AlreadyExistsException;
+import br.com.marques.kontaktapi.infrastructure.exception.GenericException;
+import br.com.marques.kontaktapi.infrastructure.exception.NotFoundException;
+import br.com.marques.kontaktapi.infrastructure.exception.ValidationError;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -74,6 +75,13 @@ public class GenericExceptionHandler {
         });
         log.error("MethodArgumentNotValidException: {}", errors);
         return buildErrorResponse("Validation failed", HttpStatus.BAD_REQUEST, errors);
+    }
+
+    @ExceptionHandler(RequestNotPermitted.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public ResponseEntity<ErrorResponse> handleRateLimiterException(RequestNotPermitted ex) {
+        log.error("RateLimiter exception: {}", ex.getMessage());
+        return buildErrorResponse("Too many requests - please try again later.", HttpStatus.TOO_MANY_REQUESTS);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {

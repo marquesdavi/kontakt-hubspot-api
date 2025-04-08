@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.exception;
+package br.com.marques.kontaktapi.infrastructure.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
