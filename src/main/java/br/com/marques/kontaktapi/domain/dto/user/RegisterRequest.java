@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public record RegisterRequest(
         @NotNull
         @NotBlank
-        @Size(min = 8, max = 30)
+        @Size(min = 8, max = 100)
         @Email
         String email,
         @NotNull

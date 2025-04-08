@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.persistence;
+package br.com.marques.kontaktapi.infrastructure.persistence;
 
 import br.com.marques.kontaktapi.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface IUserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAll();
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);

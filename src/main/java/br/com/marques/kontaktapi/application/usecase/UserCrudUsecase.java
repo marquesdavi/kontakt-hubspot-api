@@ -1,7 +1,4 @@
-package br.com.marques.kontaktapi.app.usecase;
-
-import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
-import br.com.marques.kontaktapi.domain.entity.User;
+package br.com.marques.kontaktapi.application.usecase;
 
 import java.util.List;
 

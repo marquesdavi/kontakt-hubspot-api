@@ -1,13 +1,12 @@
-package br.com.marques.kontaktapi.infra.service;
+package br.com.marques.kontaktapi.infrastructure.service;
 
 import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.infra.config.security.IAuthenticationFacade;
-import br.com.marques.kontaktapi.infra.exception.AlreadyExistsException;
-import br.com.marques.kontaktapi.infra.exception.NotFoundException;
-import br.com.marques.kontaktapi.infra.mapper.UserMapper;
-import br.com.marques.kontaktapi.infra.persistence.IUserRepository;
-import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
+import br.com.marques.kontaktapi.infrastructure.config.security.IAuthenticationFacade;
+import br.com.marques.kontaktapi.infrastructure.exception.AlreadyExistsException;
+import br.com.marques.kontaktapi.infrastructure.exception.NotFoundException;
+import br.com.marques.kontaktapi.infrastructure.mapper.UserMapper;
+import br.com.marques.kontaktapi.infrastructure.persistence.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,7 +29,7 @@ class UserCrudServiceTest {
     @Mock
     private IAuthenticationFacade authenticationFacade;
     @Mock
-    private IUserRepository userRepository;
+    private UserRepository userRepository;
     @Mock
     private UserMapper userMapper;
     @InjectMocks

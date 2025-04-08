@@ -1,13 +1,16 @@
-package br.com.marques.kontaktapi.infra.api;
+package br.com.marques.kontaktapi.infrastructure.api;
 
 import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
+import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +30,14 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody RegisterRequest dto) {
+    @RateLimiter(name = "RateLimiter", fallbackMethod = "rateLimiterFallback")
+    public ResponseEntity<Void> create(@Valid @RequestBody RegisterRequest dto) {
         service.create(dto);
         return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<Void> rateLimiterFallback(RegisterRequest dto, Throwable t) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
     }
 
     @Operation(summary = "Get all users (Staff Exclusive)")
@@ -40,8 +48,13 @@ public class UserController {
     })
     @GetMapping
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @RateLimiter(name = "RateLimiter", fallbackMethod = "rateLimiterFallback")
     public ResponseEntity<List<User>> list() {
         List<User> users = service.list();
         return ResponseEntity.ok(users);
+    }
+
+    public String rateLimiterFallback(Throwable t) {
+        return "Too many requests - please try again later.";
     }
 }

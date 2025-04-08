@@ -1,11 +1,11 @@
-package br.com.marques.kontaktapi.infra.service;
+package br.com.marques.kontaktapi.infrastructure.service;
 
-import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
+import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
 import br.com.marques.kontaktapi.domain.dto.user.LoginRequest;
 import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.dto.user.TokenResponse;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.app.usecase.UserAuthenticationUsecase;
+import br.com.marques.kontaktapi.application.usecase.UserAuthenticationUsecase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 
 @Slf4j

@@ -1,8 +1,8 @@
-package br.com.marques.kontaktapi.infra.api;
+package br.com.marques.kontaktapi.infrastructure.api;
 
 import br.com.marques.kontaktapi.domain.dto.user.LoginRequest;
 import br.com.marques.kontaktapi.domain.dto.user.TokenResponse;
-import br.com.marques.kontaktapi.app.usecase.UserAuthenticationUsecase;
+import br.com.marques.kontaktapi.application.usecase.UserAuthenticationUsecase;
 import br.com.marques.kontaktapi.domain.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

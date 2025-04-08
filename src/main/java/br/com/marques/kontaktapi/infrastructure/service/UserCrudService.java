@@ -1,14 +1,15 @@
-package br.com.marques.kontaktapi.infra.service;
+package br.com.marques.kontaktapi.infrastructure.service;
 
-import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
+import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
 import br.com.marques.kontaktapi.domain.entity.RoleEnum;
-import br.com.marques.kontaktapi.infra.config.security.IAuthenticationFacade;
+import br.com.marques.kontaktapi.infrastructure.config.resilience.Resilient;
+import br.com.marques.kontaktapi.infrastructure.config.security.IAuthenticationFacade;
 import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.infra.mapper.UserMapper;
-import br.com.marques.kontaktapi.infra.persistence.IUserRepository;
-import br.com.marques.kontaktapi.infra.exception.AlreadyExistsException;
-import br.com.marques.kontaktapi.infra.exception.NotFoundException;
+import br.com.marques.kontaktapi.infrastructure.mapper.UserMapper;
+import br.com.marques.kontaktapi.infrastructure.persistence.UserRepository;
+import br.com.marques.kontaktapi.infrastructure.exception.AlreadyExistsException;
+import br.com.marques.kontaktapi.infrastructure.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -22,11 +23,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserCrudService implements UserCrudUsecase<User, RegisterRequest> {
     private final IAuthenticationFacade authenticationFacade;
-    private final IUserRepository userRepository;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
 
     @Override
     @Transactional
+    @Resilient(rateLimiter = "RateLimiter", circuitBreaker = "CircuitBreaker", fallbackMethod = "fallback")
     public void create(RegisterRequest dto) {
         log.info("Creating new user with email: {}", dto.email());
         existsByEmail(dto.email());
@@ -51,8 +53,14 @@ public class UserCrudService implements UserCrudUsecase<User, RegisterRequest> {
     }
 
     @Override
+    @Resilient(rateLimiter = "RateLimiter", circuitBreaker = "CircuitBreaker", fallbackMethod = "fallback")
     public List<User> list() {
         return userRepository.findAll();
+    }
+
+    public void fallback(Throwable t) {
+        log.warn("API call limit exceeded");
+        throw new RuntimeException("User creation temporarily unavailable. Please try again later.", t);
     }
 
     public User findByIdOrElseThrow(Long id) {

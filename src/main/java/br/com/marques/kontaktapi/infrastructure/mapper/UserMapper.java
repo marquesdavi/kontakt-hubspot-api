@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.mapper;
+package br.com.marques.kontaktapi.infrastructure.mapper;
 
 import br.com.marques.kontaktapi.domain.dto.user.RegisterRequest;
 import br.com.marques.kontaktapi.domain.entity.User;
