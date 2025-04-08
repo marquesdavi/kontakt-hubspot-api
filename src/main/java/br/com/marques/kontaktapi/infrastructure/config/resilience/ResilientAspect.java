@@ -10,8 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
@@ -46,8 +50,9 @@ public class ResilientAspect {
                 } else {
                     throw new RuntimeException("Fallback method returned null.", e);
                 }
+            } else {
+                return getDefaultFallbackValue(joinPoint);
             }
-            throw new RuntimeException("Default fallback: Operation temporarily unavailable.", e);
         }
     }
 
@@ -100,7 +105,16 @@ public class ResilientAspect {
 
         Method fallbackMethod = findFallbackMethod(target, fallbackMethodName, fallbackArgs.length);
         if (fallbackMethod != null) {
-            return fallbackMethod.invoke(target, fallbackArgs);
+            try {
+                return fallbackMethod.invoke(target, fallbackArgs);
+            } catch (InvocationTargetException ite) {
+                Throwable targetException = ite.getTargetException();
+                if (targetException instanceof RuntimeException) {
+                    throw (RuntimeException) targetException;
+                } else {
+                    throw new RuntimeException(targetException);
+                }
+            }
         } else {
             throw new IllegalStateException("Fallback method not found: " + fallbackMethodName);
         }
@@ -114,11 +128,29 @@ public class ResilientAspect {
     }
 
     private Method findFallbackMethod(Object target, String fallbackMethodName, int fallbackArgsLength) {
-        for (Method method : target.getClass().getMethods()) {
+        Class<?> targetClass = AopUtils.getTargetClass(target);
+        for (Method method : targetClass.getMethods()) {
             if (method.getName().equals(fallbackMethodName)
                     && method.getParameterCount() == fallbackArgsLength) {
                 return method;
             }
+        }
+        for (Method method : targetClass.getDeclaredMethods()) {
+            if (method.getName().equals(fallbackMethodName)
+                    && method.getParameterCount() == fallbackArgsLength) {
+                method.setAccessible(true);
+                return method;
+            }
+        }
+        return null;
+    }
+
+    private Object getDefaultFallbackValue(ProceedingJoinPoint joinPoint) {
+        Class<?> returnType = ((MethodSignature) joinPoint.getSignature()).getReturnType();
+        if (returnType.equals(Void.TYPE)) {
+            return null;
+        } else if (Mono.class.isAssignableFrom(returnType)) {
+            return Mono.empty();
         }
         return null;
     }
