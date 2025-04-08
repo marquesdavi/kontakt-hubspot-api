@@ -1,8 +1,9 @@
-package br.com.marques.kontaktapi.infra.external;
+package br.com.marques.kontaktapi.infrastructure.external;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -69,5 +70,17 @@ public class HubspotApiHelper {
                 .bodyToMono(responseType)
                 .doOnSuccess(r -> log.info("JSON call executed successfully"))
                 .doOnError(e -> log.error("Error executing JSON call: {}", e.getMessage()));
+    }
+
+    public <R> Mono<R> executeGetJsonCall(String endpoint, ParameterizedTypeReference<R> typeRef, String accessToken) {
+        log.info("Executing GET JSON call to endpoint: {}", endpoint);
+        return webClient.get()
+                .uri(endpoint)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + accessToken)
+                .retrieve()
+                .bodyToMono(typeRef)
+                .doOnSuccess(r -> log.info("GET JSON call executed successfully"))
+                .doOnError(e -> log.error("Error executing GET JSON call: {}", e.toString()));
     }
 }

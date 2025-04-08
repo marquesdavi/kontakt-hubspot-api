@@ -1,10 +1,10 @@
-package br.com.marques.kontaktapi.infra.service;
+package br.com.marques.kontaktapi.infrastructure.service;
 
-import br.com.marques.kontaktapi.app.usecase.HubspotTokenUsecase;
-import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
+import br.com.marques.kontaktapi.application.usecase.HubspotTokenUsecase;
+import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
 import br.com.marques.kontaktapi.domain.dto.contact.ContactRequest;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.infra.external.HubspotApiHelper;
+import br.com.marques.kontaktapi.infrastructure.external.HubspotApiHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -50,7 +50,7 @@ class ContactServiceTest {
 
     @Nested
     @DisplayName("createContact")
-    class CreateContactTests {
+    class CreateContactCreationEventEntityTests {
 
         @Test
         @DisplayName("shouldCreateContact_WhenAccessTokenIsValid")

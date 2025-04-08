@@ -1,11 +1,11 @@
-package br.com.marques.kontaktapi.infra.external;
+package br.com.marques.kontaktapi.infrastructure.external;
 
-import br.com.marques.kontaktapi.app.usecase.HubspotTokenUsecase;
+import br.com.marques.kontaktapi.application.usecase.HubspotTokenUsecase;
 import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackRequest;
 import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthTokenResponse;
 import br.com.marques.kontaktapi.domain.entity.User;
-import br.com.marques.kontaktapi.app.strategy.CacheServiceStrategy;
-import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
+import br.com.marques.kontaktapi.application.strategy.CacheRepositoryStrategy;
+import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.UUID;
 public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackRequest, OAuthTokenResponse> {
 
     private final HubspotApiHelper hubspotApiHelper;
-    private final CacheServiceStrategy cacheServiceStrategy;
+    private final CacheRepositoryStrategy cacheRepositoryStrategy;
     private final UserCrudUsecase<User, ?> userCrudUsecase;
 
     @Override
@@ -63,7 +63,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
         params.add("refresh_token", refreshToken);
 
         String refreshTokenKey = getRefreshTokenKey(userId);
-        cacheServiceStrategy.delete(refreshTokenKey);
+        cacheRepositoryStrategy.delete(refreshTokenKey);
 
         OAuthTokenResponse tokenResponse = hubspotApiHelper.executeCall(
                         "/oauth/v1/token",
@@ -100,8 +100,8 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
             String accessTokenKey = getAccessTokenKey(userId);
             String refreshTokenKey = getRefreshTokenKey(userId);
 
-            cacheServiceStrategy.set(accessTokenKey, tokenResponse.access_token(), Duration.ofSeconds(accessTokenTTL));
-            cacheServiceStrategy.set(refreshTokenKey, tokenResponse.refresh_token(), Duration.ofDays(5));
+            cacheRepositoryStrategy.set(accessTokenKey, tokenResponse.access_token(), Duration.ofSeconds(accessTokenTTL));
+            cacheRepositoryStrategy.set(refreshTokenKey, tokenResponse.refresh_token(), Duration.ofDays(5));
         } catch (Exception e) {
             log.error("Error persisting HubSpot tokens for user {}: {}", userId, e.getMessage());
         }
@@ -110,7 +110,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
     @Override
     public String getAccessTokenByUserId(Long userId) {
         String accessTokenKey = getAccessTokenKey(userId);
-        String token = cacheServiceStrategy.get(accessTokenKey);
+        String token = cacheRepositoryStrategy.get(accessTokenKey);
         if (Objects.isNull(token) || token.isEmpty())
             token = accessTokenFallback(userId);
 
@@ -130,7 +130,7 @@ public class HubspotOAuthService implements HubspotTokenUsecase<OAuthCallbackReq
 
     public String getRefreshTokenByUserId(Long userId) {
         String refreshTokenKey = getRefreshTokenKey(userId);
-        return cacheServiceStrategy.get(refreshTokenKey);
+        return cacheRepositoryStrategy.get(refreshTokenKey);
     }
 
     String getAccessTokenKey(Long userId) {

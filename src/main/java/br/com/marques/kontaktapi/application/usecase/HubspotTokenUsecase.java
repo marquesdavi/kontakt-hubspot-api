@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.app.usecase;
+package br.com.marques.kontaktapi.application.usecase;
 
 public interface HubspotTokenUsecase<Req, Res> {
     String generateAuthorizationUrl();

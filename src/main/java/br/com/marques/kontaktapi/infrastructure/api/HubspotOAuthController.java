@@ -1,7 +1,7 @@
-package br.com.marques.kontaktapi.infra.api;
+package br.com.marques.kontaktapi.infrastructure.api;
 
 import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackRequest;
-import br.com.marques.kontaktapi.app.usecase.HubspotTokenUsecase;
+import br.com.marques.kontaktapi.application.usecase.HubspotTokenUsecase;
 import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthTokenResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

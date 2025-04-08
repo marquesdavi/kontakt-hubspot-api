@@ -1,7 +1,7 @@
-package br.com.marques.kontaktapi.infra.external;
+package br.com.marques.kontaktapi.infrastructure.external;
 
-import br.com.marques.kontaktapi.app.strategy.CacheServiceStrategy;
-import br.com.marques.kontaktapi.app.usecase.UserCrudUsecase;
+import br.com.marques.kontaktapi.application.strategy.CacheRepositoryStrategy;
+import br.com.marques.kontaktapi.application.usecase.UserCrudUsecase;
 import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthCallbackRequest;
 import br.com.marques.kontaktapi.domain.dto.hubspot.OAuthTokenResponse;
 import br.com.marques.kontaktapi.domain.entity.User;
@@ -31,7 +31,7 @@ class HubspotOAuthServiceTest {
     @Mock
     private HubspotApiHelper hubspotApiHelper;
     @Mock
-    private CacheServiceStrategy cacheServiceStrategy;
+    private CacheRepositoryStrategy cacheRepositoryStrategy;
     @Mock
     private UserCrudUsecase<User, ?> userCrudUsecase;
     @InjectMocks
@@ -90,9 +90,9 @@ class HubspotOAuthServiceTest {
             verify(hubspotApiHelper, times(1)).buildCallParameters("authorization_code");
             verify(hubspotApiHelper, times(1))
                     .executeCall(anyString(), any(MultiValueMap.class), eq(OAuthTokenResponse.class));
-            verify(cacheServiceStrategy, times(1))
+            verify(cacheRepositoryStrategy, times(1))
                     .set(eq("hubspot:access_token:1"), eq("accessToken"), eq(Duration.ofSeconds(3600)));
-            verify(cacheServiceStrategy, times(1))
+            verify(cacheRepositoryStrategy, times(1))
                     .set(eq("hubspot:refresh_token:1"), eq("refreshToken"), eq(Duration.ofDays(5)));
         }
 
@@ -133,11 +133,11 @@ class HubspotOAuthServiceTest {
                     .buildCallParameters("refresh_token");
             verify(hubspotApiHelper, times(1))
                     .executeCall(anyString(), any(MultiValueMap.class), eq(OAuthTokenResponse.class));
-            verify(cacheServiceStrategy, times(1))
+            verify(cacheRepositoryStrategy, times(1))
                     .delete("hubspot:refresh_token:1");
-            verify(cacheServiceStrategy, times(1))
+            verify(cacheRepositoryStrategy, times(1))
                     .set(eq("hubspot:access_token:1"), eq("newAccessToken"), eq(Duration.ofSeconds(3600)));
-            verify(cacheServiceStrategy, times(1))
+            verify(cacheRepositoryStrategy, times(1))
                     .set(eq("hubspot:refresh_token:1"), eq("newRefreshToken"), eq(Duration.ofDays(5)));
         }
     }
@@ -189,9 +189,9 @@ class HubspotOAuthServiceTest {
             );
             hubspotOAuthService.persistTokens(tokenResponseDTO, 1L);
 
-            verify(cacheServiceStrategy, times(1))
+            verify(cacheRepositoryStrategy, times(1))
                     .set("hubspot:access_token:1", "accessToken", Duration.ofSeconds(3600));
-            verify(cacheServiceStrategy, times(1))
+            verify(cacheRepositoryStrategy, times(1))
                     .set("hubspot:refresh_token:1", "refreshToken", Duration.ofDays(5));
         }
 
@@ -199,7 +199,7 @@ class HubspotOAuthServiceTest {
         @DisplayName("shouldNotPersistTokens_WhenTokenResponseIsNull")
         void shouldNotPersistTokens_WhenTokenResponseIsNull() {
             hubspotOAuthService.persistTokens(null, 1L);
-            verifyNoInteractions(cacheServiceStrategy);
+            verifyNoInteractions(cacheRepositoryStrategy);
         }
     }
 
@@ -210,7 +210,7 @@ class HubspotOAuthServiceTest {
         @Test
         @DisplayName("shouldReturnAccessToken_WhenCachedTokenExists")
         void shouldReturnAccessToken_WhenCachedTokenExists() {
-            when(cacheServiceStrategy.get("hubspot:access_token:1")).thenReturn("cachedAccessToken");
+            when(cacheRepositoryStrategy.get("hubspot:access_token:1")).thenReturn("cachedAccessToken");
             String token = hubspotOAuthService.getAccessTokenByUserId(1L);
             assertEquals("cachedAccessToken", token);
         }
@@ -218,8 +218,8 @@ class HubspotOAuthServiceTest {
         @Test
         @DisplayName("shouldRefreshAndReturnAccessToken_WhenCachedTokenMissingAndRefreshTokenExists")
         void shouldRefreshAndReturnAccessToken_WhenCachedTokenMissingAndRefreshTokenExists() {
-            when(cacheServiceStrategy.get("hubspot:access_token:1")).thenReturn(null);
-            when(cacheServiceStrategy.get("hubspot:refresh_token:1")).thenReturn("testRefreshToken");
+            when(cacheRepositoryStrategy.get("hubspot:access_token:1")).thenReturn(null);
+            when(cacheRepositoryStrategy.get("hubspot:refresh_token:1")).thenReturn("testRefreshToken");
             OAuthTokenResponse tokenResponseDTO = new OAuthTokenResponse(
                     "newAccessToken",
                     "newRefreshToken",
@@ -234,8 +234,8 @@ class HubspotOAuthServiceTest {
 
             String token = hubspotOAuthService.getAccessTokenByUserId(1L);
             assertEquals("newAccessToken", token);
-            verify(cacheServiceStrategy, times(1)).get("hubspot:access_token:1");
-            verify(cacheServiceStrategy, times(1)).get("hubspot:refresh_token:1");
+            verify(cacheRepositoryStrategy, times(1)).get("hubspot:access_token:1");
+            verify(cacheRepositoryStrategy, times(1)).get("hubspot:refresh_token:1");
             verify(hubspotApiHelper, times(1))
                     .executeCall(anyString(), any(MultiValueMap.class), eq(OAuthTokenResponse.class));
         }
@@ -243,13 +243,13 @@ class HubspotOAuthServiceTest {
         @Test
         @DisplayName("shouldReturnNull_WhenNoAccessOrRefreshTokenFound")
         void shouldReturnNull_WhenNoAccessOrRefreshTokenFound() {
-            when(cacheServiceStrategy.get("hubspot:access_token:1")).thenReturn(null);
-            when(cacheServiceStrategy.get("hubspot:refresh_token:1")).thenReturn(null);
+            when(cacheRepositoryStrategy.get("hubspot:access_token:1")).thenReturn(null);
+            when(cacheRepositoryStrategy.get("hubspot:refresh_token:1")).thenReturn(null);
 
             String token = hubspotOAuthService.getAccessTokenByUserId(1L);
             assertNull(token);
-            verify(cacheServiceStrategy, times(1)).get("hubspot:access_token:1");
-            verify(cacheServiceStrategy, times(1)).get("hubspot:refresh_token:1");
+            verify(cacheRepositoryStrategy, times(1)).get("hubspot:access_token:1");
+            verify(cacheRepositoryStrategy, times(1)).get("hubspot:refresh_token:1");
             verify(hubspotApiHelper, never())
                     .executeCall(anyString(), any(MultiValueMap.class), eq(OAuthTokenResponse.class));
         }
@@ -262,10 +262,10 @@ class HubspotOAuthServiceTest {
         @Test
         @DisplayName("shouldReturnRefreshToken_WhenTokenExists")
         void shouldReturnRefreshToken_WhenTokenExists() {
-            when(cacheServiceStrategy.get("hubspot:refresh_token:1")).thenReturn("testRefreshToken");
+            when(cacheRepositoryStrategy.get("hubspot:refresh_token:1")).thenReturn("testRefreshToken");
             String token = hubspotOAuthService.getRefreshTokenByUserId(1L);
             assertEquals("testRefreshToken", token);
-            verify(cacheServiceStrategy, times(1)).get("hubspot:refresh_token:1");
+            verify(cacheRepositoryStrategy, times(1)).get("hubspot:refresh_token:1");
         }
     }
 }

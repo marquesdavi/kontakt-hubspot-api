@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.app.usecase;
+package br.com.marques.kontaktapi.application.usecase;
 
 import br.com.marques.kontaktapi.domain.dto.contact.ContactCreationEventRequest;
 
