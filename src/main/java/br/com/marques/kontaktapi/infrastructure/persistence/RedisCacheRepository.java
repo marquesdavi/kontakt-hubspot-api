@@ -1,6 +1,6 @@
-package br.com.marques.kontaktapi.infra.persistence;
+package br.com.marques.kontaktapi.infrastructure.persistence;
 
-import br.com.marques.kontaktapi.app.strategy.CacheServiceStrategy;
+import br.com.marques.kontaktapi.application.strategy.CacheRepositoryStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -9,7 +9,7 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-public class RedisCacheService implements CacheServiceStrategy {
+public class RedisCacheRepository implements CacheRepositoryStrategy {
     private final StringRedisTemplate redisTemplate;
 
     @Override

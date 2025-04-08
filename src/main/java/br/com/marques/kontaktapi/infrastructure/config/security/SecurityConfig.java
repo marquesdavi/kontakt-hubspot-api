@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.config.security;
+package br.com.marques.kontaktapi.infrastructure.config.security;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -47,7 +47,9 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/v2/api-docs/**",
             "/swagger-resources/**",
-            "/swagger-resources"
+            "/swagger-resources",
+            "/actuator/**",
+            "/actuator"
     };
 
     @Bean
@@ -56,6 +58,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authorize -> authorize
                                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/hubspot/webhook/contact").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/hubspot/callback").permitAll()
                                 .requestMatchers(AUTH_WHITE_LIST).permitAll()

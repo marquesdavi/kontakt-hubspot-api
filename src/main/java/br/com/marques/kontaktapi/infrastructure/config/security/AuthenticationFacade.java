@@ -1,4 +1,4 @@
-package br.com.marques.kontaktapi.infra.config.security;
+package br.com.marques.kontaktapi.infrastructure.config.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
