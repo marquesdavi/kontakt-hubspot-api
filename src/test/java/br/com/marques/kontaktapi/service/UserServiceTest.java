@@ -22,11 +22,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserCrudService Tests")
-class UserCrudServiceTest {
+class UserServiceTest {
     @Mock
     private UserRepository userRepository;
     @InjectMocks
-    private UserCrudService userCrudService;
+    private UserService userService;
 
     private RegisterRequest registerRequest;
     private User user;
@@ -48,7 +48,7 @@ class UserCrudServiceTest {
             when(userRepository.save(any(User.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0, User.class));
 
-            userCrudService.create(registerRequest);
+            userService.create(registerRequest);
 
             verify(userRepository, times(1)).existsByEmail(registerRequest.email());
             verify(userRepository, times(1)).save(any(User.class));
@@ -59,7 +59,7 @@ class UserCrudServiceTest {
         void shouldThrowAlreadyExistsException_WhenEmailAlreadyExists() {
             when(userRepository.existsByEmail(registerRequest.email())).thenReturn(true);
 
-            assertThrows(AlreadyExistsException.class, () -> userCrudService.create(registerRequest));
+            assertThrows(AlreadyExistsException.class, () -> userService.create(registerRequest));
 
             verify(userRepository, times(1)).existsByEmail(registerRequest.email());
             verify(userRepository, never()).save(any());
@@ -74,14 +74,14 @@ class UserCrudServiceTest {
         @DisplayName("shouldThrowAlreadyExistsException_WhenEmailExists")
         void shouldThrowAlreadyExistsException_WhenEmailExists() {
             when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
-            assertThrows(AlreadyExistsException.class, () -> userCrudService.existsByEmail("test@example.com"));
+            assertThrows(AlreadyExistsException.class, () -> userService.existsByEmail("test@example.com"));
         }
 
         @Test
         @DisplayName("shouldNotThrowException_WhenEmailDoesNotExist")
         void shouldNotThrowException_WhenEmailDoesNotExist() {
             when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
-            assertDoesNotThrow(() -> userCrudService.existsByEmail("test@example.com"));
+            assertDoesNotThrow(() -> userService.existsByEmail("test@example.com"));
         }
     }
 
@@ -93,7 +93,7 @@ class UserCrudServiceTest {
         @DisplayName("shouldReturnUser_WhenUserExists")
         void shouldReturnUser_WhenUserExists() {
             when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
-            User foundUser = userCrudService.findByEmail("test@example.com");
+            User foundUser = userService.findByEmail("test@example.com");
             assertEquals(user, foundUser);
         }
 
@@ -101,7 +101,7 @@ class UserCrudServiceTest {
         @DisplayName("shouldThrowNotFoundException_WhenUserDoesNotExist")
         void shouldThrowNotFoundException_WhenUserDoesNotExist() {
             when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
-            assertThrows(NotFoundException.class, () -> userCrudService.findByEmail("test@example.com"));
+            assertThrows(NotFoundException.class, () -> userService.findByEmail("test@example.com"));
         }
     }
 
@@ -114,7 +114,7 @@ class UserCrudServiceTest {
         void shouldReturnAllUsers_WhenCalled() {
             List<User> users = List.of(user);
             when(userRepository.findAll()).thenReturn(users);
-            List<User> result = userCrudService.list();
+            List<User> result = userService.list();
             assertEquals(users, result);
         }
     }
@@ -127,7 +127,7 @@ class UserCrudServiceTest {
         @DisplayName("shouldReturnUser_WhenUserExists")
         void shouldReturnUser_WhenUserExists() {
             when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-            User foundUser = userCrudService.findByIdOrElseThrow(1L);
+            User foundUser = userService.findByIdOrElseThrow(1L);
             assertEquals(user, foundUser);
         }
 
@@ -135,7 +135,7 @@ class UserCrudServiceTest {
         @DisplayName("shouldThrowNotFoundException_WhenUserDoesNotExist")
         void shouldThrowNotFoundException_WhenUserDoesNotExist() {
             when(userRepository.findById(1L)).thenReturn(Optional.empty());
-            assertThrows(NotFoundException.class, () -> userCrudService.findByIdOrElseThrow(1L));
+            assertThrows(NotFoundException.class, () -> userService.findByIdOrElseThrow(1L));
         }
     }
 }

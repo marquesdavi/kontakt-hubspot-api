@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserCrudService implements UserServiceGateway<User, RegisterRequest> {
+public class UserService implements UserServiceGateway<User, RegisterRequest> {
     private final UserRepository userRepository;
 
     @Override

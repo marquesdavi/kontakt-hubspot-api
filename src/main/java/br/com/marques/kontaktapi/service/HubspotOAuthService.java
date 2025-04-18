@@ -37,12 +37,21 @@ public class HubspotOAuthService implements OAuthServiceGateway<OAuthCallbackReq
         String state = loggedUserId + ":" + UUID.randomUUID();
         String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
 
+        handleState(encodedState, loggedUserId);
+
         return hubspotApiHelper.generateAuthorizationUrl(scopes, encodedState);
+    }
+
+    void handleState(String state, Long loggedUserId) {
+        String stateKey = "oauth:state:" + loggedUserId;
+        cacheServiceGateway.set(stateKey, state, Duration.ofMinutes(10));
     }
 
     @Override
     public void processTokenExchange(OAuthCallbackRequest callbackDto) {
         Long userId = decodeUserIdFromState(callbackDto.state());
+
+        isValidState(userId, callbackDto);
 
         String code = callbackDto.code();
         MultiValueMap<String, String> params = hubspotApiHelper.buildCallParameters("authorization_code");
@@ -57,6 +66,18 @@ public class HubspotOAuthService implements OAuthServiceGateway<OAuthCallbackReq
                 .block();
 
         persistTokens(tokenResponse, userId);
+    }
+
+    void isValidState(Long userId, OAuthCallbackRequest callbackDto) {
+        String stateKey = "oauth:state:" + userId;
+        String storedState = cacheServiceGateway.get(stateKey);
+
+        cacheServiceGateway.delete(stateKey);
+
+        if (storedState == null || !storedState.equals(URLDecoder.decode(callbackDto.state(), StandardCharsets.UTF_8))) {
+            log.error("State parameter mismatch for user {}: expected [{}], received [{}]", userId, storedState, callbackDto.state());
+            throw new IllegalArgumentException("Invalid state parameter. Possible CSRF attack.");
+        }
     }
 
     @Override
