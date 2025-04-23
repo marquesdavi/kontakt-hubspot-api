@@ -4,7 +4,7 @@
 
 ## 1. Project Overview
 
-**Kontakt API** is a robust CRM API built using **Spring Boot**. Although the original requirements focused solely on integrating with HubSpot, this project was extended to serve as a corporate-grade solution. It features its own JWT-based authentication (with **Spring Security 6**) before interacting with the HubSpot API. The architecture follows a simplified version of Clean Architecture, emphasizing the **Dependency Inversion Principle** and the **Single Responsibility Principle**.
+**Kontakt API** is a robust CRM API built using **Spring Boot**. Although the original requirements focused solely on integrating with HubSpot, this project was extended to serve as a corporate-grade solution. It features its own JWT-based authentication (with **Spring Security 6**) before interacting with the HubSpot API. The architecture follows the **Dependency Inversion Principle** and the **Single Responsibility Principle** in a simplified way.
 
 ### Key Features:
 - **Robust Architecture:**  
